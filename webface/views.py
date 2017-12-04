@@ -30,3 +30,28 @@ def page_not_found(error):
     print(error.name)
     print(error.description)
     return render_template('404.html', e=error), 404
+
+@app.route('/login/', methods=['POST'])
+def login_post():
+    jmeno = request.form.get('jmeno')
+    heslo = request.form.get('heslo')
+    next = request.args.get('next')        
+    if  check_password_hash(str(pwhash.get(jmeno)),heslo):
+        session['jmeno'] = jmeno
+        flash('Úspěšně jsi se přihlásil.', 'zelena')
+        return redirect(next or url_for('login'))
+    else:
+        flash('chybné jméno nebo heslo', 'cervena')
+        if next:
+            return redirect(url_for('login', next=next))
+        else:
+            return redirect(url_for('login'))
+
+@app.route('/login/', methods=['GET'])
+def login_get():
+    return render_template('login.html')
+
+@app.route('/logout/', methods=['GET'])
+def logout():
+    session.pop('jmeno', None)
+    return redirect(url_for('login'))
